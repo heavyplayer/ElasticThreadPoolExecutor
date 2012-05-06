@@ -19,7 +19,7 @@ public class ElasticityTest {
 
 	@Before
 	public void setUp() throws Exception {
-		pool = new ElasticThreadPoolExecutor(1, 3, 0, TimeUnit.MICROSECONDS, new ArrayBlockingQueue<Runnable>(20), new CountingThreadFactory());
+		pool = new ElasticThreadPoolExecutor(1, 3, 0, TimeUnit.MICROSECONDS, new ArrayBlockingQueue<Runnable>(500), new CountingThreadFactory());
 		threadCount = 0;
 	}
 
@@ -56,9 +56,17 @@ public class ElasticityTest {
 	@Test
 	public void testMaximum() {
 		synchronized(lock) {
-			for(int i = 0; i < 20; i++)
-				pool.execute(new Lock());
-			waitForQueueToHaveAtMost(17);
+			// 10 threads, inserting 50 each
+			for(int i = 0; i < 10; i++) {
+				new Thread() {
+					public void run() {
+						for(int i = 0; i < 50; i++)
+							pool.execute(new Lock());
+					}
+				}.start();
+			}
+			
+			waitForQueueToHaveAtMost(497);
 
 			assertEquals(3, pool.getCorePoolSize());
 			assertEquals(3, threadCount);
