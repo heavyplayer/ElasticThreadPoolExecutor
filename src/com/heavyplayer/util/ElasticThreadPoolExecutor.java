@@ -37,8 +37,8 @@ public class ElasticThreadPoolExecutor extends ThreadPoolExecutor {
 	@Override
 	public void execute(Runnable command) {
 		synchronized(elasticityLock) {
-			int count = getQueue().size() + getActiveCount();
-			if(count >= getCorePoolSize() && count <= getMaximumPoolSize()) {        
+			int count = getActiveCount() + getQueue().size();
+			if(count >= getCorePoolSize() && getCorePoolSize() < getMaximumPoolSize()) {        
 				setCorePoolSize(getCorePoolSize() + 1);
 			}
 		}
